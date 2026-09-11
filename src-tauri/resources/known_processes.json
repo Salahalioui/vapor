@@ -1,0 +1,214 @@
+﻿{
+  "system": [
+    {
+      "name": "explorer.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Windows File Explorer, taskbar, desktop interface, and notification area.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "svchost.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Generic host process for Windows services running from DLLs.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "dwm.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Desktop Window Manager: renders visual effects, glass frames, and hardware-accelerated GUI.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "csrss.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Client/Server Runtime Subsystem: handles Win32 console windows and process shutdown.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "smss.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Windows Session Manager: starts user sessions, graphics subsystems, and pagefiles.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "lsass.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Local Security Authority: verifies user credentials, password policies, and tokens.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "services.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Service Control Manager: starts, stops, and coordinates Windows system services.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "winlogon.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Windows Logon Application: manages user sign-in, lock screen, and Secure Attention Sequence.",
+      "category": "system",
+      "safety": "critical",
+      "can_kill": false
+    },
+    {
+      "name": "RuntimeBroker.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Windows Runtime Broker: manages permissions for Universal Windows Platform (UWP) apps.",
+      "category": "system",
+      "safety": "caution",
+      "can_kill": true
+    },
+    {
+      "name": "SearchHost.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Windows Search UI: provides fast desktop file search and Start menu queries.",
+      "category": "system",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "audiodg.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Windows Audio Device Graph Isolation: isolates audio driver plugins and DSP sound processing.",
+      "category": "system",
+      "safety": "caution",
+      "can_kill": true
+    },
+    {
+      "name": "spoolsv.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Print Spooler Service: manages print jobs in memory before sending to printer.",
+      "category": "system",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "taskhostw.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Host Process for Windows Tasks: runs DLL-based background maintenance tasks.",
+      "category": "system",
+      "safety": "caution",
+      "can_kill": true
+    },
+    {
+      "name": "ctfmon.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "CTF Loader: coordinates keyboard layouts, text input service, speech, and handwriting.",
+      "category": "system",
+      "safety": "safe",
+      "can_kill": true
+    }
+  ],
+  "apps": [
+    {
+      "name": "chrome.exe",
+      "publisher": "Google LLC",
+      "description": "Google Chrome Web Browser and subframe renderer processes.",
+      "category": "browser",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "msedge.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Microsoft Edge Chromium Browser and background extensions.",
+      "category": "browser",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "firefox.exe",
+      "publisher": "Mozilla Corporation",
+      "description": "Mozilla Firefox Web Browser and tab content workers.",
+      "category": "browser",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "Code.exe",
+      "publisher": "Microsoft Corporation",
+      "description": "Visual Studio Code editor electron frame or language server.",
+      "category": "developer",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "node.exe",
+      "publisher": "OpenJS Foundation",
+      "description": "Node.js JavaScript runtime environment for backend or build tools.",
+      "category": "developer",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "python.exe",
+      "publisher": "Python Software Foundation",
+      "description": "Python scripting engine and virtual environment interpreter.",
+      "category": "developer",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "cargo.exe",
+      "publisher": "Rust Project",
+      "description": "Rust package manager, build orchestrator, and test runner.",
+      "category": "developer",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "rustc.exe",
+      "publisher": "Rust Project",
+      "description": "Rust compiler compiling crate source code to native machine code.",
+      "category": "developer",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "discord.exe",
+      "publisher": "Discord Inc.",
+      "description": "Discord VoIP, voice chat, and social messaging client.",
+      "category": "communication",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "slack.exe",
+      "publisher": "Slack Technologies",
+      "description": "Slack team communication and channel messaging client.",
+      "category": "communication",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "spotify.exe",
+      "publisher": "Spotify AB",
+      "description": "Spotify streaming music and podcast desktop player.",
+      "category": "media",
+      "safety": "safe",
+      "can_kill": true
+    },
+    {
+      "name": "steam.exe",
+      "publisher": "Valve Corporation",
+      "description": "Steam digital gaming store and game distribution platform.",
+      "category": "gaming",
+      "safety": "safe",
+      "can_kill": true
+    }
+  ]
+}

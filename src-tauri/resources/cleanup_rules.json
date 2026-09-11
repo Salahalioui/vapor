@@ -1,0 +1,132 @@
+﻿[
+  {
+    "id": "user_temp",
+    "name": "User Temporary Files",
+    "description": "Transient scratch files created by Windows applications in the user temp directory.",
+    "path": "%TEMP%",
+    "risk": "safe",
+    "category": "system",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "windows_temp",
+    "name": "Windows System Temp",
+    "description": "Operating system temporary installation and runtime scratch files.",
+    "path": "C:\\Windows\\Temp",
+    "risk": "safe",
+    "category": "system",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "crash_dumps",
+    "name": "Crash Dumps & Error Reports",
+    "description": "Application crash memory dumps and diagnostic minidumps.",
+    "path": "%LOCALAPPDATA%\\CrashDumps",
+    "risk": "safe",
+    "category": "system",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "thumb_cache",
+    "name": "Thumbnail & Icon Cache",
+    "description": "Windows File Explorer database thumbnails and icon caches.",
+    "path": "%LOCALAPPDATA%\\Microsoft\\Windows\\Explorer",
+    "risk": "safe",
+    "category": "system",
+    "age_days": null,
+    "pattern": "thumbcache_*.db"
+  },
+  {
+    "id": "chrome_cache",
+    "name": "Google Chrome Cache",
+    "description": "Temporary web page assets and images cached by Chrome.",
+    "path": "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Cache",
+    "risk": "safe",
+    "category": "browser",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "edge_cache",
+    "name": "Microsoft Edge Cache",
+    "description": "Cached web content and media from Microsoft Edge.",
+    "path": "%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Default\\Cache",
+    "risk": "safe",
+    "category": "browser",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "brave_cache",
+    "name": "Brave Browser Cache",
+    "description": "Browser cache files from Brave browser.",
+    "path": "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Cache",
+    "risk": "safe",
+    "category": "browser",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "npm_cache",
+    "name": "npm Package Cache",
+    "description": "Global tarball download cache for Node.js package manager.",
+    "path": "%LOCALAPPDATA%\\npm-cache",
+    "risk": "safe",
+    "category": "developer",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "pip_cache",
+    "name": "Python pip Cache",
+    "description": "Downloaded wheel packages and HTTP cache for Python pip.",
+    "path": "%LOCALAPPDATA%\\pip\\cache",
+    "risk": "safe",
+    "category": "developer",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "old_downloads",
+    "name": "Old Downloads (>90 days)",
+    "description": "Files downloaded to your user Downloads folder over 90 days ago.",
+    "path": "%USERPROFILE%\\Downloads",
+    "risk": "review",
+    "category": "user",
+    "age_days": 90,
+    "pattern": null
+  },
+  {
+    "id": "cargo_cache",
+    "name": "Cargo Registry Cache",
+    "description": "Rust crates.io download archives (.crate files).",
+    "path": "%USERPROFILE%\\.cargo\\registry\\cache",
+    "risk": "review",
+    "category": "developer",
+    "age_days": 30,
+    "pattern": null
+  },
+  {
+    "id": "win_update_download",
+    "name": "Windows Update Staging Cache",
+    "description": "Downloaded Windows Update payload archives ready for cleanup.",
+    "path": "C:\\Windows\\SoftwareDistribution\\Download",
+    "risk": "review",
+    "category": "system",
+    "age_days": null,
+    "pattern": null
+  },
+  {
+    "id": "delivery_opt",
+    "name": "Delivery Optimization Cache",
+    "description": "Peer-to-peer Windows Update cached packages.",
+    "path": "C:\\Windows\\SoftwareDistribution\\DeliveryOptimization",
+    "risk": "advanced",
+    "category": "system",
+    "age_days": null,
+    "pattern": null
+  }
+]

@@ -1,0 +1,32 @@
+[package]
+name = "vapor"
+version = "0.2.0"
+description = "Vapor - Windows PC Triage & Cleanup Assistant"
+authors = ["Vapor Team"]
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "vapor_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.11.3", features = [] }
+tauri-plugin-log = "2"
+sysinfo = "0.33"
+rayon = "1.10"
+jwalk = "0.8"
+reqwest = { version = "0.12", features = ["json"] }
+chrono = { version = "0.4", features = ["serde"] }
+trash = "5.2"
+winreg = "0.52"
+tokio = { version = "1", features = ["full"] }
+

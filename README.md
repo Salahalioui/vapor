@@ -8,6 +8,8 @@
 ![Svelte](https://img.shields.io/badge/Svelte-5-red.svg)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-cyan.svg)
 ![License](https://img.shields.io/badge/License-MIT-emerald.svg)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Donate-F16061?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/salahalioui)
+[![PayPal](https://img.shields.io/badge/PayPal-Support-00457C?style=flat&logo=paypal&logoColor=white)](https://paypal.me/salahalioui)
 
 ---
 
@@ -148,6 +150,32 @@ cargo test
 # Build frontend production assets cleanly
 npm run build
 ```
+
+---
+
+## 📦 Releases & GitHub Actions Automated Builds
+
+Pre-compiled standalone Windows executables and installers are automatically generated via GitHub Actions:
+
+- **Latest Releases**: Available on the [GitHub Releases Page](https://github.com/Salahalioui/vapor/releases).
+- **Automated CI/CD**: Every release tag triggers an automated matrix build compiling an optimized standalone `vapor.exe` and modern NSIS installer (`.exe`).
+- **Standalone Portable**: Runs with zero installer overhead directly from any folder or USB drive.
+
+---
+
+## ☕ Support the Project
+
+Vapor is 100% free, open-source software built with **zero ads, zero tracking, and zero commercial scareware**. If Vapor helped speed up your PC, freed gigabytes of disk space, or made your Windows experience cleaner, consider supporting independent open-source development!
+
+### 💳 Card / PayPal (via Ko-fi)
+- **Ko-fi**: [ko-fi.com/salahalioui](https://ko-fi.com/salahalioui) *(Accepts Debit/Credit Cards & PayPal balance with 0% platform cut on donations)*
+- **Direct PayPal**: [paypal.me/salahalioui](https://paypal.me/salahalioui)
+
+### 🪙 Cryptocurrency (USDT - TRON TRC-20)
+Support directly via the developer's Bybit exchange wallet:
+- **Network**: `TRON (TRC20)`
+- **Wallet Address**: `TBQv6e9SixpNDqympDGX3LMRdmKdEj3BHm`
+- **Minimum Deposit**: `0.005 USDT`
 
 ---
 

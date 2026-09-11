@@ -8,8 +8,8 @@
 ![Svelte](https://img.shields.io/badge/Svelte-5-red.svg)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-cyan.svg)
 ![License](https://img.shields.io/badge/License-MIT-emerald.svg)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Donate-F16061?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/salahalioui)
-[![PayPal](https://img.shields.io/badge/PayPal-Support-00457C?style=flat&logo=paypal&logoColor=white)](https://paypal.me/salahalioui)
+[![PayPal](https://img.shields.io/badge/PayPal-salahdinea77%40gmail.com-00457C?style=flat&logo=paypal&logoColor=white)](mailto:salahdinea77@gmail.com)
+[![USDT TRC-20](https://img.shields.io/badge/USDT%20(TRC--20)-Bybit%20Wallet-26A17B?style=flat&logo=tether&logoColor=white)](#-support-the-project)
 
 ---
 
@@ -167,15 +167,17 @@ Pre-compiled standalone Windows executables and installers are automatically gen
 
 Vapor is 100% free, open-source software built with **zero ads, zero tracking, and zero commercial scareware**. If Vapor helped speed up your PC, freed gigabytes of disk space, or made your Windows experience cleaner, consider supporting independent open-source development!
 
-### 💳 Card / PayPal (via Ko-fi)
-- **Ko-fi**: [ko-fi.com/salahalioui](https://ko-fi.com/salahalioui) *(Accepts Debit/Credit Cards & PayPal balance with 0% platform cut on donations)*
-- **Direct PayPal**: [paypal.me/salahalioui](https://paypal.me/salahalioui)
+### 💳 Direct PayPal
+- **Recipient Email**: `salahdinea77@gmail.com`
+- **In-App QR Code**: Open Vapor &rarr; **Settings & Support** to scan the personal PayPal QR code directly with your mobile camera or PayPal app.
+- Direct donations can be sent via PayPal balance or linked card (personal transfer / support).
 
 ### 🪙 Cryptocurrency (USDT - TRON TRC-20)
-Support directly via the developer's Bybit exchange wallet:
+Support directly via the developer's Bybit exchange wallet (enables instant P2P local cashout):
 - **Network**: `TRON (TRC20)`
 - **Wallet Address**: `TBQv6e9SixpNDqympDGX3LMRdmKdEj3BHm`
 - **Minimum Deposit**: `0.005 USDT`
+- **In-App QR Code**: Available inside Vapor's **Settings & Support** view for 1-click address copy or mobile scan.
 
 ---
 

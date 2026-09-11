@@ -29,8 +29,10 @@
   let showCryptoModal = $state(false);
   let showPaypalModal = $state(false);
   let copiedAddress = $state(false);
+  let copiedEmail = $state(false);
 
   const USDT_TRC20_ADDRESS = 'TBQv6e9SixpNDqympDGX3LMRdmKdEj3BHm';
+  const PAYPAL_EMAIL = 'salahdinea77@gmail.com';
 
   function handleSave() {
     settings.setGeminiKey(apiKeyInput);
@@ -49,6 +51,16 @@
       setTimeout(() => (copiedAddress = false), 2500);
     } catch (e) {
       console.error('Failed to copy address:', e);
+    }
+  }
+
+  async function copyEmailToClipboard() {
+    try {
+      await navigator.clipboard.writeText(PAYPAL_EMAIL);
+      copiedEmail = true;
+      setTimeout(() => (copiedEmail = false), 2500);
+    } catch (e) {
+      console.error('Failed to copy email:', e);
     }
   }
 
@@ -208,23 +220,23 @@
 
     <!-- Donation / Support Actions -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-      <!-- Ko-fi / PayPal Button -->
+      <!-- Direct PayPal Button -->
       <button
-        onclick={() => handleOpenLink('https://ko-fi.com/salahalioui')}
+        onclick={() => (showPaypalModal = true)}
         class="flex items-center justify-between p-3.5 bg-slate-950/70 hover:bg-slate-800/80 active:scale-[0.98] border border-slate-700/80 hover:border-cyan-500/50 rounded-xl transition-all group text-left cursor-pointer"
       >
         <div class="flex items-center gap-3">
-          <div class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
-            <Coffee class="w-4 h-4" />
+          <div class="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+            <QrCode class="w-4 h-4" />
           </div>
           <div>
             <span class="text-xs font-bold text-slate-200 block group-hover:text-cyan-300 transition-colors">
-              Support on Ko-fi / Card
+              Support via PayPal
             </span>
-            <span class="text-[11px] text-slate-400 block">Donate or buy a coffee ($3 / $5 / $10)</span>
+            <span class="text-[11px] text-slate-400 block">Scan QR code or send to email</span>
           </div>
         </div>
-        <ExternalLink class="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
+        <QrCode class="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
       </button>
 
       <!-- Bybit USDT Crypto Button -->
@@ -243,18 +255,22 @@
             <span class="text-[11px] text-slate-400 block">TRON (TRC20) via Bybit Wallet</span>
           </div>
         </div>
-        <QrCode class="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+        <Coins class="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
       </button>
     </div>
 
     <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-[11px] text-slate-400">
-      <span>Prefer direct PayPal?</span>
+      <span>Direct PayPal Email: <strong class="text-slate-200 font-mono">salahdinea77@gmail.com</strong></span>
       <button
-        onclick={() => (showPaypalModal = true)}
+        onclick={() => copyEmailToClipboard()}
         class="text-cyan-400 hover:text-cyan-300 hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
       >
-        <span>View Direct PayPal QR Code</span>
-        <QrCode class="w-3 h-3" />
+        <span>{copiedEmail ? 'Copied!' : 'Copy Email'}</span>
+        {#if copiedEmail}
+          <Check class="w-3 h-3" />
+        {:else}
+          <Copy class="w-3 h-3" />
+        {/if}
       </button>
     </div>
   </div>
@@ -351,7 +367,7 @@
             <QrCode class="w-5 h-5" />
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-100">Direct PayPal</h3>
+            <h3 class="text-base font-bold text-slate-100">Direct PayPal Support</h3>
             <p class="text-[11px] text-slate-400">Salah Alioui</p>
           </div>
         </div>
@@ -372,17 +388,29 @@
       </div>
 
       <p class="text-center text-xs text-slate-300">
-        Scan with your PayPal app or camera to send support directly.
+        Scan with your PayPal app or send directly to the email below:
       </p>
 
-      <div class="pt-2 text-center">
-        <button
-          onclick={() => handleOpenLink('https://paypal.me/salahalioui')}
-          class="text-xs text-cyan-400 hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer"
-        >
-          <span>Open paypal.me/salahalioui</span>
-          <ExternalLink class="w-3.5 h-3.5" />
-        </button>
+      <!-- Email Box & Copy Button -->
+      <div class="space-y-1.5 pt-1">
+        <span class="text-[11px] text-slate-400 font-semibold block">PayPal Recipient Email:</span>
+        <div class="flex items-center gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+          <span class="text-xs font-mono text-cyan-400 select-all flex-1 break-all">
+            {PAYPAL_EMAIL}
+          </span>
+          <button
+            onclick={() => copyEmailToClipboard()}
+            class="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-slate-950 text-xs font-bold rounded-lg transition-all cursor-pointer"
+          >
+            {#if copiedEmail}
+              <Check class="w-3.5 h-3.5" />
+              <span>Copied!</span>
+            {:else}
+              <Copy class="w-3.5 h-3.5" />
+              <span>Copy</span>
+            {/if}
+          </button>
+        </div>
       </div>
     </div>
   </div>

@@ -374,3 +374,48 @@ fn test_get_processes_for_audit() {
         assert!(names.insert(p.name.to_lowercase()), "Process names in audit batch must be deduplicated: {}", p.name);
     }
 }
+
+#[test]
+fn test_live_pc_specs_and_capabilities() {
+    use vapor_lib::system::specs::get_system_specs;
+    let specs = get_system_specs();
+
+    assert!(!specs.cpu.model.is_empty(), "CPU model must be detected");
+    assert!(specs.cpu.physical_cores > 0, "Physical cores must be > 0");
+    assert!(specs.memory.total_gb > 0.0, "Total RAM must be > 0 GB");
+    assert!(!specs.primary_storage.drive_letter.is_empty(), "Primary storage must be detected");
+    assert!(specs.primary_storage.total_gb > 0.0, "Storage total capacity must be > 0");
+
+    // Dynamic scoring bounds
+    assert!(specs.capabilities.office_everyday.score >= 1.0 && specs.capabilities.office_everyday.score <= 10.0);
+    assert!(specs.capabilities.software_development.score >= 1.0 && specs.capabilities.software_development.score <= 10.0);
+    assert!(specs.capabilities.gaming_3d.score >= 1.0 && specs.capabilities.gaming_3d.score <= 10.0);
+    assert!(!specs.capabilities.overall_grade.is_empty());
+    assert!(!specs.capabilities.bottleneck_headline.is_empty());
+    assert!(!specs.capabilities.bottleneck_explanation.is_empty());
+}
+
+#[test]
+fn test_live_windows_tweaks_query() {
+    use vapor_lib::system::tweaks::get_windows_tweaks;
+    let tweaks = get_windows_tweaks();
+    assert_eq!(tweaks.len(), 4, "Must expose 4 safe Windows debloat tweaks");
+
+    for tweak in tweaks {
+        assert!(tweak.is_safe, "All tweaks must be marked safe and reversible");
+        assert!(!tweak.title.is_empty());
+        assert!(!tweak.description.is_empty());
+    }
+}
+
+#[test]
+fn test_guardian_process_badges_on_live_system() {
+    use vapor_lib::process::monitor::get_hardware_overview;
+    let hw = get_hardware_overview();
+    assert!(!hw.top_processes.is_empty());
+
+    for proc in &hw.top_processes {
+        assert!(!proc.signature_badge.is_empty(), "Every process must have a Guardian signature badge: {}", proc.name);
+        assert!(!proc.location_category.is_empty(), "Every process must have a location category: {}", proc.name);
+    }
+}

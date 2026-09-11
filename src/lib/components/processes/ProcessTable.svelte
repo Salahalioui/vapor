@@ -357,14 +357,29 @@
           {#each sortedProcesses as proc (proc.pid)}
             {@const cachedAi = system.getProcessExplanationFromCache(proc.name)}
             <tr class="hover:bg-slate-800/40 transition-colors">
-              <td class="py-2 px-3 font-semibold text-slate-100 max-w-[200px] truncate" title={proc.name}>
-                <div class="flex items-center gap-1.5">
+              <td class="py-2 px-3 font-semibold text-slate-100 max-w-[240px] truncate" title={proc.name}>
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="truncate">{proc.name}</span>
-                  {#if proc.is_known}
-                    <span class="text-[10px] text-cyan-400 px-1 py-0.2 bg-cyan-950/60 rounded border border-cyan-800/50" title="Verified in Windows offline dictionary">
-                      Verified
+
+                  <!-- Suspicious Process Guardian Badges -->
+                  {#if proc.signature_badge === 'Verified (Microsoft)'}
+                    <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" title="Cryptographically signed by Microsoft">
+                      🟢 MS Verified
+                    </span>
+                  {:else if proc.signature_badge === 'Verified (Known Publisher)'}
+                    <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30" title="Cryptographically signed by verified publisher">
+                      🔵 Signed
+                    </span>
+                  {:else if proc.signature_badge === 'Unsigned in Temp/AppData'}
+                    <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold" title="Unsigned binary running from user temp/appdata folder">
+                      🔴 Unsigned Temp
+                    </span>
+                  {:else if proc.signature_badge === 'Unsigned'}
+                    <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30" title="Unsigned executable">
+                      🟡 Unsigned
                     </span>
                   {/if}
+
                   {#if cachedAi}
                     <span
                       class="text-[9px] px-1 py-0.2 rounded border font-semibold uppercase {cachedAi.safety === 'safe' ? 'text-emerald-400 bg-emerald-950/60 border-emerald-800/50' : cachedAi.safety === 'bloatware' ? 'text-rose-400 bg-rose-950/60 border-rose-800/50' : 'text-amber-400 bg-amber-950/60 border-amber-800/50'}"
@@ -386,14 +401,21 @@
               <td class="py-2 px-3 font-mono font-semibold text-emerald-400 whitespace-nowrap">
                 {proc.memory_mb.toFixed(0)} MB
               </td>
-              <td class="py-2 px-3 text-slate-400 max-w-[240px] truncate" title={proc.description || proc.publisher || proc.category}>
-                {#if proc.description}
-                  <span class="text-slate-300 truncate">{proc.description}</span>
-                {:else if proc.publisher}
-                  <span class="text-slate-400 truncate">{proc.publisher}</span>
-                {:else}
-                  <span class="text-slate-500 capitalize">{proc.category}</span>
-                {/if}
+              <td class="py-2 px-3 text-slate-400 max-w-[240px] truncate" title={proc.exe_path || proc.description || proc.publisher}>
+                <div class="flex items-center gap-1.5 truncate">
+                  {#if proc.location_category}
+                    <span class="text-[10px] font-mono text-slate-500 bg-slate-900 px-1 rounded border border-slate-800">
+                      {proc.location_category}
+                    </span>
+                  {/if}
+                  {#if proc.description}
+                    <span class="text-slate-300 truncate">{proc.description}</span>
+                  {:else if proc.publisher}
+                    <span class="text-slate-400 truncate">{proc.publisher}</span>
+                  {:else}
+                    <span class="text-slate-500 capitalize">{proc.category}</span>
+                  {/if}
+                </div>
               </td>
               <td class="py-2 px-3 text-right whitespace-nowrap space-x-1">
                 <!-- Explain with Gemini button -->

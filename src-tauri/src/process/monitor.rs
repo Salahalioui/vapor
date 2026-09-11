@@ -1,3 +1,4 @@
+use super::guardian::{analyze_path_heuristics, evaluate_guardian_badge, SignatureBadge};
 use super::known_db::lookup_process;
 use serde::{Deserialize, Serialize};
 use std::sync::{LazyLock, Mutex};
@@ -25,6 +26,9 @@ pub struct ProcessInfo {
     pub safety: String, // 'safe' | 'caution' | 'critical' | 'bloatware'
     pub can_kill: bool,
     pub is_known: bool,
+    pub signature_badge: String,
+    pub is_suspicious_location: bool,
+    pub location_category: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -93,9 +97,15 @@ pub fn get_hardware_overview() -> SystemHardwareOverview {
                         .as_ref()
                         .map(|p| p.to_lowercase().contains("windows\\system32"))
                         .unwrap_or(false);
+
+                    let (pe_publisher, pe_desc) = exe_path
+                        .as_deref()
+                        .map(super::guardian::get_pe_version_info)
+                        .unwrap_or((None, None));
+
                     (
-                        None,
-                        None,
+                        pe_publisher,
+                        pe_desc,
                         if is_system_path {
                             "system".to_string()
                         } else {
@@ -112,6 +122,20 @@ pub fn get_hardware_overview() -> SystemHardwareOverview {
                 }
             };
 
+            let heuristics = analyze_path_heuristics(exe_path.as_deref());
+            let badge = evaluate_guardian_badge(
+                exe_path.as_deref(),
+                publisher.as_deref(),
+                &heuristics,
+            );
+
+            // Escalate safety to caution if unsigned executable is in a suspicious directory
+            let adjusted_safety = if badge == SignatureBadge::UnsignedSuspiciousLocation && safety == "safe" {
+                "caution".to_string()
+            } else {
+                safety
+            };
+
             ProcessInfo {
                 pid: pid_u32,
                 name,
@@ -122,9 +146,12 @@ pub fn get_hardware_overview() -> SystemHardwareOverview {
                 publisher,
                 description,
                 category,
-                safety,
+                safety: adjusted_safety,
                 can_kill,
                 is_known,
+                signature_badge: badge.as_str().to_string(),
+                is_suspicious_location: heuristics.is_suspicious_location,
+                location_category: heuristics.location_label,
             }
         })
         .collect();

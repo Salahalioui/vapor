@@ -1,6 +1,6 @@
-# Vapor (ClearDeck Engine) ⚡
+# Vapor (ClearDeck Engine) ⚡ v0.3.0
 
-> **Ultra-lightweight, performant, native Windows PC triage and cleanup assistant.**  
+> **Ultra-lightweight, performant, native Windows PC triage, capability rating, and safe debloat assistant.**  
 > Built with **Tauri 2.0 (Rust backend)** and **Svelte 5 (Runes) + Tailwind CSS**.
 
 ![Rust](https://img.shields.io/badge/Rust-1.77%2B-orange.svg)
@@ -11,61 +11,70 @@
 
 ---
 
-## 🌟 Core Philosophy: Zero-Bloat Performance
+## 🌟 Core Philosophy: Honest Optimization & Zero Bloat
 
-Traditional Windows optimizers often defeat their own purpose: they install persistent background resident daemons, consume 150MB+ RAM, trigger unnecessary notifications, and indiscriminately delete files without safeguards.
+Traditional Windows optimizers frequently resemble the very problems they claim to solve: they install persistent background resident daemons, trigger scareware notifications ("You have 3,450 critical errors! Upgrade to Pro now!"), and make destructive, irreversible changes to the system.
 
-**Vapor takes a fundamentally different approach:**
-- **Zero Resident Daemons**: When closed, Vapor exits completely. No background services, no telemetry workers.
-- **Ultra-Low Memory Footprint**: Runs at **~30MB to 40MB RAM** at idle.
-- **Rayon & Jwalk Concurrency**: Multi-threaded parallel file walking across NVMe and SSD drives.
-- **Non-Destructive Cleanup**: Every deletion passes through an interactive preview modal and stages into a reversible **Rescue Bin** before permanent purge.
-- **Privacy-First AI**: Outbound calls to Google Gemini 2.5 Flash strip usernames, personal paths, and hostnames prior to network dispatch.
+**Vapor takes a fundamentally different, transparent approach:**
+- **Zero Resident Daemons**: When closed, Vapor exits completely. No persistent background services, no autostart daemons, zero telemetry.
+- **Ultra-Low Memory Footprint**: Runs at **~30MB to 40MB RAM** runtime and compiles to a lightweight **<15MB native binary**.
+- **Transparent & Honest Communication**: NO commercial scareware language, NO hardcoded fake feedback, NO paywalls. Everything is calculated dynamically from real hardware and system APIs.
+- **Max Non-Destructive Reversibility**: File cleanups are staged into a reversible **Rescue Bin**, tweaks modify standard user registry values with instant one-click revert, and optional **Windows System Restore Points** can be created beforehand.
+- **Gemini Free Quota Preservation**: Persistent disk caching (`ai_process_cache.json`), offline heuristic rule fallback, and Google Search grounding when online.
 
 ---
 
-## 🚀 Key Features (v0.2.0)
+## 🚀 What's New in v0.3.0
 
-### 1. 0–100 System Health Score & "Top 3 Actions"
-- **Dynamic 4-Pillar Composite Score**:
-  - **Disk Headroom (35%)**: Storage margin on primary volume with standardized color bands (<10% rose, <20% amber, >=20% emerald) and contextual live sublabels.
-  - **Active Memory Pressure (25%)**: Real-time RAM consumption load (`X GB used (Y%)`).
-  - **Safe Cleanup Volume (20%)**: Accumulated temp, scratch, and crash logs (`X MB cleanable`).
-  - **Startup & Zombie Drag (20%)**: Combined boot drag and dormant applications (`X apps (Y boot, Z dormant)`).
-- **Decision Engine**: Eliminates decision fatigue by curating:
-  - ⚡ **Fastest Win**: 1-click safe cleanup.
-  - 💾 **Biggest Win**: Dormant build directory (`node_modules`, `target`, `.venv`) or large file cleanup. Shows "Storage Audit Pending" when un-scanned.
-  - 🧠 **Smartest Win**: Disabling autostart registry items to accelerate boot time.
+### 1. Dual-Mode UI Flow (Simple Mode & Power User Mode)
+- **Simple Mode (Default)**:
+  - Clean, welcoming, friendly interface with **zero technical jargon**.
+  - **Traffic Light Trust System**:
+    - 🟢 **Green (Safe)**: Safe temporary caches, thumbnail databases, and log files.
+    - 🟡 **Yellow (Review)**: Optional tweaks and background software that require user choice.
+    - 🔴 **Red (Protected)**: Core Windows kernel, essential drivers, and critical services that Vapor will never touch.
+  - **1-Click Smart Clean**: Aggregates safe cleanable files and stages them into the Rescue Bin with friendly, honest confirmation.
+  - **PC Capabilities & Bottleneck Detective**: Instant plain-English capability grades and hardware bottlenecks.
+- **Power User Mode**:
+  - Deep system telemetry across 7 dedicated views: **Dashboard**, **Storage Explorer** (Drive cards, Large files, Dev Diet), **Safe Cleanup Checklist**, **Process Radar & Suspicious Guardian**, **Apps & Zombies**, **Windows Debloat Center**, and **Settings**.
 
-### 2. Developer Diet & Storage Explorer
-- **Non-Destructive Recycle Bin Purge**: Dev directory purges now use `trash::delete` to move folders to the native Windows Recycle Bin rather than destructive permanent unlinking.
-- **Developer Diet Scanner**: Specifically hunts dormant `node_modules`, Rust `target/`, Python `.venv`, Next.js `.next`, and build outputs untouched for >30 days.
-- **Reveal in File Explorer**: 1-click "Open Folder" (`show_in_folder`) buttons for build directories, large files, and installed applications.
-- **Targeted Drive Filtering**: Clickable drive cards trigger scoped scans for selected drive mount roots.
-- **Large Files & Old Downloads**: Configurable threshold (bound to user settings) across user profiles with age badges.
+### 2. Honest PC Specs & Capability Rating Engine
+- **Instant SSD vs HDD Detection**:
+  - Utilizes Win32 `IOCTL_STORAGE_QUERY_PROPERTY` querying `StorageDeviceSeekPenaltyProperty`. Drives with `IncursSeekPenalty == 0` are identified as solid-state drives (SSD/NVMe); rotational drives are identified as HDDs.
+- **Hardware GPU Enumeration via DXGI**:
+  - Direct integration with DirectX Graphics Infrastructure (`dxgi.dll`) to enumerate graphics adapters, VRAM sizes, and distinguish dedicated GPUs from integrated graphics.
+- **Dynamic 3-Pillar Capability Scoring (1.0 to 10.0 scale + Letter Grade)**:
+  - **Everyday & Office**: Weighted heavily on SSD presence and 8GB+ RAM for 4K video streaming and web responsiveness.
+  - **Software Development**: Weighted on 16GB+ RAM, multi-core CPU threads, and fast SSD for compilers, IDEs, and local containers.
+  - **3D Gaming**: Weighted on dedicated GPU vs integrated graphics and dedicated VRAM capacity.
+- **"Bottleneck Detective"**:
+  - Identifies the #1 real hardware bottleneck in plain English (e.g., Mechanical HDD primary drive, low RAM, or integrated graphics).
+- **Windows Uptime & "Fast Startup" Trap Alert**:
+  - Detects Windows continuous uptime exceeding 7 days and explains why a true "Restart" (not Shutdown) flushes leaked memory and stale driver caches.
 
-### 3. Safe Cleanup Engine & Reversible Rescue Bin
-- **Interactive Exclusion Filtering**: Checkboxes per file with "Select All" toggle and dynamic live reclaim calculations.
-- **Large Sample Cap Banner**: Clear notification when review results exceed 500 files, capping rendered DOM elements while staging all matching rule paths safely.
-- **Reversible Rescue Bin**: Cleaned files are isolated into `%LOCALAPPDATA%\Vapor\RescueBin\<Stage_ID>\` with a JSON manifest.
-- **Manifest Inspector Accordion**: Inspect staged file paths and sizes directly inside the Rescue Bin drawer without needing to restore first.
-- **Human-Readable Timestamps & Partial Restore Diagnostics**: Stages display clean dates ("Cleanup Run • Sept 10 (2 hours ago)") and surface itemized path errors if any locked files fail restoration.
+### 3. Safe Windows Performance & Debloat Center
+- **Safe Reversible Registry Tweaks**:
+  - **Disable Start Menu Bing Web Search**: Stops the Start Menu from sending keystrokes to Bing (`BingSearchEnabled = 0`, `DisableSearchBoxSuggestions = 1`).
+  - **Hide Taskbar MSN Widgets**: Removes the MSN news and weather ticker (`TaskbarDa = 0`), saving ~150MB RAM.
+  - **Disable Game DVR Background Video Capture**: Stops continuous background GPU screen recording (`GameDVR_Enabled = 0`, `AppCaptureEnabled = 0`).
+  - **Turn Off P2P Delivery Optimization**: Prevents Windows Update from uploading update packages to external PCs (`DODownloadMode = 0`).
+- **Sponsored Appx Bloatware Remover**:
+  - Detects pre-installed commercial promotional apps (TikTok, Disney+, Candy Crush, MSN News, Bing Weather, Solitaire) with descriptions and 1-click clean uninstallation via PowerShell.
+- **Optional System Restore Point Integration**:
+  - Allows generating an instant Windows System Restore checkpoint (`Checkpoint-Computer`) before optimization.
 
-### 4. Process Radar & Gemini Batch Fleet AI Audit
-- **Batch Gemini Fleet Audit**: Analyzes top 15–20 active unknown and heavy processes (with multi-instance deduplication) in a single token-optimized prompt, returning safe/caution/bloatware/critical breakdowns, overall fleet summary, and prioritized recommendations.
-- **In-Memory & UI Caching**: Explanations from fleet audits are indexed in memory and frontend stores (normalized with and without `.exe`), instantly populating row badges and individual modal queries without redundant API calls.
-- **Freeze on Hover & Live Feed Pause**: Hovering over the process table automatically freezes rows to prevent jumping during 2s sampling; dedicated Pause/Resume button gives full manual control.
-- **Immediate Offline Dictionary + Optional Deep Dive**: Built-in verification (`known_processes.json`) displays publisher, description, and safety classification instantly upon modal open; optional "Deep Dive with Gemini" button performs cloud reasoning on demand.
-- **Inline Gemini API Key Entry**: If an API key is not yet configured, users can paste and save it directly inside the diagnostics modal.
-
-### 5. Installed Apps & Reversible Startup Radar
-- **Reversible Startup Management**: Disabling autostart software safely archives entries to `%LOCALAPPDATA%\Vapor\disabled_startup.json` (supporting both 64-bit and `WOW6432Node` branches) so they can be re-enabled anytime.
-- **Elevation Detection**: Detects non-elevated permissions and displays an "Admin Required" shield badge for HKLM startup items.
-- **Installed Apps Actions**: Direct "Uninstall" invocation (with shell escaping guardrails), "Open Folder" in Explorer, and "Search Web" (Google search via `rundll32` URL dispatch) for unknown packages.
-- **Zombie App Detection**: Flags heavy apps (>300MB) untouched for >60 days using Prefetch execution traces.
-
-### 6. Universal Safety & Custom Modal Dialogs
-- **In-App Confirmation Modals**: Every destructive or elevated action (kill process, purge build cache, restore rescue stage, enable/disable startup) uses an accessible in-app `ConfirmModal.svelte` dialog, eliminating all native blocking `window.confirm()` and `window.alert()` popups.
+### 4. Suspicious Process Guardian
+- **Path Heuristics**:
+  - Flags executables running from `%APPDATA%`, `%TEMP%`, or `Downloads` (primary indicators of adware, droppers, and unauthorized miners).
+- **Digital Signature Verification (Win32 WinVerifyTrust)**:
+  - Cryptographically verifies PE executable signatures using `wintrust.dll`.
+  - Process Badges:
+    - 🟢 `Verified (Microsoft)`: Cryptographically verified official Windows component.
+    - 🔵 `Verified (Known Publisher)`: Digitally signed by a recognized third-party developer.
+    - 🟡 `Unsigned`: Unsigned program running from standard application directories.
+    - 🔴 `Unsigned in Temp/AppData`: High suspicion alert for unsigned binaries in user temp/data folders.
+- **Offline Heuristic & Persistent Cache Explainer**:
+  - Transparently falls back to local rules and dictionary when offline or without an API key.
 
 ---
 
@@ -74,95 +83,74 @@ Traditional Windows optimizers often defeat their own purpose: they install pers
 ```
 jolly-raman/
 ├── src-tauri/                     # Native Rust Backend
-│   ├── Cargo.toml                 # tauri, sysinfo, jwalk, rayon, winreg, reqwest
-│   ├── tauri.conf.json            # Window styling & security config
+│   ├── Cargo.toml                 # Dependencies: tauri, sysinfo, jwalk, rayon, winreg, reqwest
+│   ├── tauri.conf.json            # Window styling & security config (v0.3.0)
 │   ├── resources/
-│   │   ├── cleanup_rules.json     # Extensible JSON rules catalog
+│   │   ├── cleanup_rules.json     # Safe cleanup rules catalog
 │   │   └── known_processes.json   # Offline dictionary of Windows binaries
 │   ├── tests/
-│   │   └── integration_tests.rs   # End-to-end integration test suite
+│   │   └── integration_tests.rs   # 19 comprehensive end-to-end integration tests
 │   └── src/
 │       ├── main.rs                # Windows entrypoint
 │       ├── lib.rs                 # Tauri commands & plugin registry
+│       ├── system/
+│       │   ├── specs.rs           # Hardware specs, SSD seek penalty, DXGI GPU, capability math
+│       │   └── tweaks.rs          # Reversible registry tweaks, sponsored apps, restore points
+│       ├── process/
+│       │   ├── monitor.rs         # Live sampled CPU/RAM monitor with Guardian badges
+│       │   ├── guardian.rs        # WinVerifyTrust digital signatures & path heuristics
+│       │   └── known_db.rs        # Local lookup dictionary
+│       ├── storage/
+│       │   ├── scanner.rs         # Parallel multi-threaded directory walker
+│       │   ├── large_files.rs     # Oversized files filter
+│       │   ├── dev_diet.rs        # Developer cache hunter (node_modules, target, .venv)
+│       │   └── rescue_bin.rs      # Reversible staging & restore engine
+│       ├── apps/
+│       │   ├── installed.rs       # Installed software auditor
+│       │   └── startup.rs         # Reversible startup items manager
 │       ├── core/
 │       │   ├── health.rs          # 0-100 composite health formula
-│       │   └── rules.rs           # cleanup_rules.json loader & path evaluator
-│       ├── storage/
-│       │   ├── scanner.rs         # Non-blocking parallel directory walker
-│       │   ├── large_files.rs     # Oversized files filter
-│       │   ├── dev_diet.rs        # Developer cache hunter (node_modules, target)
-│       │   └── rescue_bin.rs      # Reversible staging & restore engine
-│       ├── process/
-│       │   ├── monitor.rs         # Sampled CPU/RAM monitor
-│       │   └── known_db.rs        # Local lookup dictionary
-│       ├── apps/
-│       │   ├── installed.rs       # 32/64-bit registry auditor
-│       │   ├── prefetch.rs        # Execution traces for "Estimated Last Used"
-│       │   └── startup.rs         # Autostart registry items & impact detector
+│       │   └── rules.rs           # Path evaluator & environment variable expansion
 │       └── ai/
-│           ├── sanitize.rs        # Privacy path & username scrubber
-│           └── gemini.rs          # Gemini 3.8 / 3.7 / 2.5 Flash client with Google Search grounding & persistent disk cache
-├── src/                           # Svelte 5 Frontend
-│   ├── main.js                    # Vite entrypoint
-│   ├── app.css                    # Tailwind CSS + Fluent Dark design tokens
-│   ├── App.svelte                 # Primary tab shell & global modals
-│   └── lib/
-│       ├── api.js                 # Tauri IPC invoke wrappers
-│       ├── utils.js               # Byte formatters, timeAgo, date helpers
-│       ├── stores/
-│       │   ├── system.svelte.js   # Svelte 5 rune store for system & hardware
-│       │   └── settings.svelte.js # Svelte 5 rune store for preferences
-│       └── components/
-│           ├── common/            # Modal, Badge, ProgressBar, Card
-│           ├── dashboard/         # HealthGauge, TopActionsCard, QuickStats
-│           ├── storage/           # DriveCards, LargeFilesTable, DevDietView
-│           ├── cleanup/           # RuleChecklist, CleanupPreviewModal, RescueBinDrawer
-│           ├── processes/         # ProcessTable, GeminiExplainModal
-│           ├── apps/              # InstalledAppsTable, StartupRadar
-│           └── settings/          # SettingsView (BYOK Gemini API key)
-├── package.json
-├── tailwind.config.js
-└── vite.config.js
+│           ├── gemini.rs          # Google Gemini 3.8/3.7/2.5 Flash, search grounding & disk cache
+│           └── sanitize.rs        # Privacy scrubber (removes usernames, paths, hostnames)
+└── src/                           # Modern Svelte 5 + Tailwind Frontend
+    ├── App.svelte                 # Main layout with Dual-Mode toggle
+    └── lib/
+        ├── api.js                 # Tauri invoke wrapper functions
+        ├── stores/
+        │   ├── system.svelte.js   # Global reactive state for specs, tweaks, health, processes
+        │   └── settings.svelte.js # Settings (UI mode, API key, thresholds)
+        └── components/
+            ├── simple/            # Friendly Simple Mode components
+            │   └── SimpleModeView.svelte
+            ├── tweaks/            # Windows Debloat & Performance Center
+            │   └── WindowsDebloatView.svelte
+            ├── dashboard/         # Health gauge, pillars, top actions
+            ├── storage/           # Drive cards, large files, Dev Diet
+            ├── cleanup/           # Rules checklist, preview modal, Rescue Bin
+            ├── processes/         # Process radar, Guardian badges, Gemini modal
+            ├── apps/              # Installed apps, startup radar
+            └── settings/          # Configuration & API key management
 ```
 
 ---
 
-## 📦 Building & Development
+## 🧪 Testing & Verification
 
-### Prerequisites
-- [Node.js](https://nodejs.org) (v18+)
-- [Rust & Cargo](https://rustup.rs) (1.77+)
-- Windows 10/11 64-bit
+Vapor is rigorously verified with automated unit and integration tests:
 
-### 1. Install Dependencies
 ```bash
-npm install
-```
+# Run all backend unit and integration tests (55 passed)
+cd src-tauri
+cargo test
 
-### 2. Run Tests
-```bash
-cargo test --manifest-path src-tauri/Cargo.toml
-```
-
-### 3. Build Web Assets
-```bash
+# Build frontend production assets cleanly
 npm run build
 ```
 
-### 4. Run Development Application
-```bash
-npx @tauri-apps/cli dev
-```
-
-### 5. Build Native Windows Executable
-```bash
-npx @tauri-apps/cli build
-```
-
 ---
 
-## 🔒 Security & Privacy
+## 📄 License
 
-1. **No Outbound Network Connections by Default**: Vapor does not connect to any servers unless the user explicitly triggers "Ask AI" on a process.
-2. **Metadata Sanitizer**: Outbound AI queries strip all username paths (`C:\Users\<Name>\...` is anonymized to generic category like `AppData/Local/...`), hostnames, and IP addresses.
-3. **Reversible Rescue Bin**: Cleanup operations do not immediately call `std::fs::remove_file`. Files are staged with original paths in `manifest.json` for 1-click restore.
+MIT License &bull; Built with pride for clean, honest Windows computing.

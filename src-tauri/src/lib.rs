@@ -3,10 +3,16 @@ pub mod apps;
 pub mod core;
 pub mod process;
 pub mod storage;
+pub mod system;
 
 use ai::gemini::{
     audit_processes_batch_with_gemini, explain_process_with_gemini, FleetAuditReport,
     GeminiProcessExplanation,
+};
+use system::specs::{get_system_specs, SystemSpecsOverview};
+use system::tweaks::{
+    create_system_restore_point, get_sponsored_apps, get_windows_tweaks, set_windows_tweak,
+    uninstall_sponsored_app, SponsoredApp, WindowsTweak,
 };
 use ai::sanitize::sanitize_process_info;
 use apps::installed::{get_installed_applications, InstalledApp};
@@ -414,6 +420,48 @@ async fn audit_processes_batch(
     audit_processes_batch_with_gemini(&api_key, &procs).await
 }
 
+#[tauri::command]
+async fn get_pc_specs() -> SystemSpecsOverview {
+    tokio::task::spawn_blocking(get_system_specs)
+        .await
+        .unwrap_or_else(|_| get_system_specs())
+}
+
+#[tauri::command]
+async fn get_pc_tweaks() -> Vec<WindowsTweak> {
+    tokio::task::spawn_blocking(get_windows_tweaks)
+        .await
+        .unwrap_or_default()
+}
+
+#[tauri::command]
+async fn apply_pc_tweak(id: String, enable: bool) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || set_windows_tweak(&id, enable))
+        .await
+        .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn get_sponsored_bloatware() -> Vec<SponsoredApp> {
+    tokio::task::spawn_blocking(get_sponsored_apps)
+        .await
+        .unwrap_or_default()
+}
+
+#[tauri::command]
+async fn remove_sponsored_app(package_full_name: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || uninstall_sponsored_app(&package_full_name))
+        .await
+        .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn trigger_system_restore_point(description: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || create_system_restore_point(&description))
+        .await
+        .map_err(|e| format!("Task error: {}", e))?
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -456,6 +504,12 @@ pub fn run() {
             show_in_folder,
             launch_uninstaller,
             open_external_url,
+            get_pc_specs,
+            get_pc_tweaks,
+            apply_pc_tweak,
+            get_sponsored_bloatware,
+            remove_sponsored_app,
+            trigger_system_restore_point,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

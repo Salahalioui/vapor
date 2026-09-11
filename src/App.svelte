@@ -1,6 +1,10 @@
 <script>
   import { onMount } from 'svelte';
   import { system } from './lib/stores/system.svelte.js';
+  import { settings } from './lib/stores/settings.svelte.js';
+
+  // Simple Mode component
+  import SimpleModeView from './lib/components/simple/SimpleModeView.svelte';
 
   // Dashboard components
   import HealthGauge from './lib/components/dashboard/HealthGauge.svelte';
@@ -25,6 +29,9 @@
   import InstalledAppsTable from './lib/components/apps/InstalledAppsTable.svelte';
   import StartupRadar from './lib/components/apps/StartupRadar.svelte';
 
+  // Debloat Center
+  import WindowsDebloatView from './lib/components/tweaks/WindowsDebloatView.svelte';
+
   // Settings
   import SettingsView from './lib/components/settings/SettingsView.svelte';
 
@@ -37,7 +44,9 @@
     Package,
     Settings,
     ShieldCheck,
-    Wind
+    Wind,
+    Sliders,
+    Zap
   } from 'lucide-svelte';
 
   onMount(() => {
@@ -50,6 +59,7 @@
     { id: 'cleanup', label: 'Safe Cleanup', icon: Sparkles },
     { id: 'processes', label: 'Process Radar', icon: Activity },
     { id: 'apps', label: 'Apps & Zombies', icon: Package },
+    { id: 'debloat', label: 'Debloat Center', icon: Sliders },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 </script>
@@ -65,36 +75,63 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="text-sm font-black tracking-widest text-slate-100 uppercase">Vapor</span>
-          <span class="text-[10px] uppercase font-mono px-1.5 py-0.2 bg-slate-800 text-cyan-400 rounded border border-slate-700">ClearDeck</span>
+          <span class="text-[10px] uppercase font-mono px-1.5 py-0.2 bg-slate-800 text-cyan-400 rounded border border-slate-700">v0.3.0</span>
         </div>
       </div>
     </div>
 
-    <!-- Center Tab Navigation -->
-    <nav class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
-      {#each tabs as tab}
-        {@const Icon = tab.icon}
-        {@const isActive = system.activeTab === tab.id}
-        <button
-          class="flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all {isActive ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/60 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}"
-          onclick={() => system.setActiveTab(tab.id)}
-        >
-          <Icon class="w-3.5 h-3.5 {isActive ? 'text-cyan-400' : 'text-slate-400'}" />
-          <span>{tab.label}</span>
-        </button>
-      {/each}
-    </nav>
+    <!-- Center Navigation: Tabs in Power User Mode, Title in Simple Mode -->
+    {#if settings.uiMode === 'expert'}
+      <nav class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
+        {#each tabs as tab}
+          {@const Icon = tab.icon}
+          {@const isActive = system.activeTab === tab.id}
+          <button
+            class="flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all {isActive ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/60 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'}"
+            onclick={() => system.setActiveTab(tab.id)}
+          >
+            <Icon class="w-3.5 h-3.5 {isActive ? 'text-cyan-400' : 'text-slate-400'}" />
+            <span>{tab.label}</span>
+          </button>
+        {/each}
+      </nav>
+    {:else}
+      <div class="hidden md:flex items-center gap-2 text-xs font-medium text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>System Protected &bull; Zero Telemetry &bull; Reversible Staging</span>
+      </div>
+    {/if}
 
     <!-- Top Right Quick Actions -->
     <div class="flex items-center gap-3">
+      <!-- Mode Toggle Switch (Simple vs Power User) -->
+      <div class="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+        <button
+          onclick={() => settings.setUiMode('simple')}
+          class="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-all {settings.uiMode === 'simple' ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/60 shadow-sm' : 'text-slate-400 hover:text-slate-200'}"
+          title="Switch to friendly Simple Mode"
+        >
+          <Sparkles class="w-3.5 h-3.5" />
+          <span>Simple</span>
+        </button>
+        <button
+          onclick={() => settings.setUiMode('expert')}
+          class="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition-all {settings.uiMode === 'expert' ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/60 shadow-sm' : 'text-slate-400 hover:text-slate-200'}"
+          title="Switch to deep Power User Mode"
+        >
+          <Sliders class="w-3.5 h-3.5" />
+          <span>Power User</span>
+        </button>
+      </div>
+
       <!-- Rescue Bin Trigger -->
       <button
-        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-800/80 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-lg transition-all"
+        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-800/80 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-lg transition-all cursor-pointer"
         onclick={() => system.openRescueBin()}
         title="Open Reversible Rescue Bin"
       >
         <ShieldCheck class="w-3.5 h-3.5 text-emerald-400" />
-        <span>Rescue Bin</span>
+        <span class="hidden sm:inline">Rescue Bin</span>
       </button>
 
       <!-- Health Pill -->
@@ -110,23 +147,29 @@
   <!-- Main View Area -->
   <section class="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-slate-950 to-slate-900/50">
     <div class="max-w-7xl mx-auto">
-      {#if system.activeTab === 'dashboard'}
-        <HealthGauge />
-        <TopActionsCard />
-        <QuickStats />
-      {:else if system.activeTab === 'storage'}
-        <DriveCards />
-        <LargeFilesTable />
-        <DevDietView />
-      {:else if system.activeTab === 'cleanup'}
-        <RuleChecklist />
-      {:else if system.activeTab === 'processes'}
-        <ProcessTable />
-      {:else if system.activeTab === 'apps'}
-        <InstalledAppsTable />
-        <StartupRadar />
-      {:else if system.activeTab === 'settings'}
-        <SettingsView />
+      {#if settings.uiMode === 'simple'}
+        <SimpleModeView />
+      {:else}
+        {#if system.activeTab === 'dashboard'}
+          <HealthGauge />
+          <TopActionsCard />
+          <QuickStats />
+        {:else if system.activeTab === 'storage'}
+          <DriveCards />
+          <LargeFilesTable />
+          <DevDietView />
+        {:else if system.activeTab === 'cleanup'}
+          <RuleChecklist />
+        {:else if system.activeTab === 'processes'}
+          <ProcessTable />
+        {:else if system.activeTab === 'apps'}
+          <InstalledAppsTable />
+          <StartupRadar />
+        {:else if system.activeTab === 'debloat'}
+          <WindowsDebloatView />
+        {:else if system.activeTab === 'settings'}
+          <SettingsView />
+        {/if}
       {/if}
     </div>
   </section>

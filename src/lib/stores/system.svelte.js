@@ -4,7 +4,15 @@ import {
   onOperationProgress,
   fetchLargeFiles,
   fetchDevDiet,
-  auditProcessesBatch
+  auditProcessesBatch,
+  fetchPcSpecs,
+  fetchPcTweaks,
+  applyPcTweak,
+  fetchSponsoredBloatware,
+  removeSponsoredApp,
+  createSystemRestorePoint,
+  fetchCleanupRules,
+  stageCleanupRules
 } from '../api.js';
 import { settings } from './settings.svelte.js';
 
@@ -33,6 +41,22 @@ class SystemStore {
   batchFleetReport = $state(null);
   isAuditingFleet = $state(false);
   cachedProcessExplanations = $state({});
+
+  // v0.3.0 PC Specs, Capabilities, Tweaks, and Debloat Center
+  pcSpecs = $state(null);
+  isRefreshingSpecs = $state(false);
+
+  pcTweaks = $state([]);
+  isRefreshingTweaks = $state(false);
+
+  sponsoredApps = $state([]);
+  isRefreshingSponsored = $state(false);
+
+  isCreatingRestorePoint = $state(false);
+  restorePointMessage = $state(null);
+
+  isSmartCleaning = $state(false);
+  smartCleanSuccess = $state(null);
 
   // Live operation progress
   operationProgress = $state(null);
@@ -196,6 +220,105 @@ class SystemStore {
     }
   }
 
+  async refreshPcSpecs() {
+    if (this.isRefreshingSpecs) return;
+    this.isRefreshingSpecs = true;
+    try {
+      this.pcSpecs = await fetchPcSpecs();
+    } catch (e) {
+      console.error('Failed to fetch PC specs:', e);
+    } finally {
+      this.isRefreshingSpecs = false;
+    }
+  }
+
+  async refreshPcTweaks() {
+    if (this.isRefreshingTweaks) return;
+    this.isRefreshingTweaks = true;
+    try {
+      this.pcTweaks = await fetchPcTweaks();
+    } catch (e) {
+      console.error('Failed to fetch PC tweaks:', e);
+    } finally {
+      this.isRefreshingTweaks = false;
+    }
+  }
+
+  async togglePcTweak(id, enable) {
+    try {
+      await applyPcTweak(id, enable);
+      await this.refreshPcTweaks();
+    } catch (e) {
+      console.error(`Failed to toggle PC tweak ${id}:`, e);
+      throw e;
+    }
+  }
+
+  async refreshSponsoredApps() {
+    if (this.isRefreshingSponsored) return;
+    this.isRefreshingSponsored = true;
+    try {
+      this.sponsoredApps = await fetchSponsoredBloatware();
+    } catch (e) {
+      console.error('Failed to fetch sponsored bloatware:', e);
+    } finally {
+      this.isRefreshingSponsored = false;
+    }
+  }
+
+  async uninstallSponsored(packageFullName) {
+    try {
+      await removeSponsoredApp(packageFullName);
+      this.sponsoredApps = (this.sponsoredApps || []).filter(
+        (a) => a.package_full_name !== packageFullName
+      );
+    } catch (e) {
+      console.error(`Failed to uninstall sponsored app ${packageFullName}:`, e);
+      throw e;
+    }
+  }
+
+  async createRestorePoint(description = '') {
+    this.isCreatingRestorePoint = true;
+    this.restorePointMessage = null;
+    try {
+      const msg = await createSystemRestorePoint(description);
+      this.restorePointMessage = { type: 'success', text: msg };
+      return msg;
+    } catch (e) {
+      const errText = typeof e === 'string' ? e : e?.message || 'Failed to create restore point';
+      this.restorePointMessage = { type: 'error', text: errText };
+      throw e;
+    } finally {
+      this.isCreatingRestorePoint = false;
+    }
+  }
+
+  async runSmartClean() {
+    if (this.isSmartCleaning) return;
+    this.isSmartCleaning = true;
+    this.smartCleanSuccess = null;
+    try {
+      const rules = await fetchCleanupRules();
+      const safeRules = (rules || []).filter((r) => r.risk === 'Safe');
+      const ruleIds = safeRules.map((r) => r.id);
+      if (ruleIds.length > 0) {
+        const summary = await stageCleanupRules(ruleIds);
+        this.smartCleanSuccess = {
+          fileCount: summary.file_count,
+          bytesSaved: summary.total_bytes,
+          stageId: summary.stage_id,
+        };
+      }
+      await this.refreshHealth();
+    } catch (e) {
+      console.error('Failed to run smart clean:', e);
+      throw e;
+    } finally {
+      this.isSmartCleaning = false;
+    }
+  }
+
   async initialize() {
     try {
       this.unlistenProgress = await onOperationProgress((payload) => {
@@ -205,7 +328,13 @@ class SystemStore {
       console.warn('Failed to register operation-progress listener:', e);
     }
 
-    await Promise.all([this.refreshHealth(), this.refreshHardware()]);
+    await Promise.all([
+      this.refreshHealth(),
+      this.refreshHardware(),
+      this.refreshPcSpecs(),
+      this.refreshPcTweaks(),
+      this.refreshSponsoredApps(),
+    ]);
     this.startPolling();
   }
 

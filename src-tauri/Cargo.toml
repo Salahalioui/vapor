@@ -1,6 +1,6 @@
 [package]
 name = "vapor"
-version = "0.2.0"
+version = "0.3.0"
 description = "Vapor - Windows PC Triage & Cleanup Assistant"
 authors = ["Vapor Team"]
 edition = "2021"

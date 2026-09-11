@@ -156,3 +156,29 @@ export async function openExternalUrl(url) {
   return await invokeCommand('open_external_url', { url });
 }
 
+// 8. PC Specs & Capabilities
+export async function fetchPcSpecs() {
+  return await invokeCommand('get_pc_specs');
+}
+
+// 9. Safe Windows Tweaks & Debloat Center
+export async function fetchPcTweaks() {
+  return await invokeCommand('get_pc_tweaks');
+}
+
+export async function applyPcTweak(id, enable) {
+  return await invokeCommand('apply_pc_tweak', { id, enable });
+}
+
+export async function fetchSponsoredBloatware() {
+  return await invokeCommand('get_sponsored_bloatware');
+}
+
+export async function removeSponsoredApp(packageFullName) {
+  return await invokeCommand('remove_sponsored_app', { packageFullName });
+}
+
+export async function createSystemRestorePoint(description) {
+  return await invokeCommand('trigger_system_restore_point', { description });
+}
+

@@ -4,6 +4,16 @@ class SettingsStore {
   devDietThresholdDays = $state(parseInt(localStorage.getItem('vapor_dev_threshold') || '30', 10));
   largeFileSizeThresholdMb = $state(parseInt(localStorage.getItem('vapor_large_file_mb') || '100', 10));
   autoRefreshEnabled = $state(localStorage.getItem('vapor_auto_refresh') !== 'false');
+  uiMode = $state(localStorage.getItem('vapor_ui_mode') || 'simple');
+
+  setUiMode(mode) {
+    this.uiMode = mode === 'expert' ? 'expert' : 'simple';
+    localStorage.setItem('vapor_ui_mode', this.uiMode);
+  }
+
+  toggleUiMode() {
+    this.setUiMode(this.uiMode === 'simple' ? 'expert' : 'simple');
+  }
 
   setGeminiKey(key) {
     this.geminiApiKey = key.trim();

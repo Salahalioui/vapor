@@ -342,7 +342,17 @@ pub async fn explain_process_with_gemini(
 
     let key = api_key.trim();
     if key.is_empty() {
-        return Err("Gemini API key is required. Please set it in Settings.".to_string());
+        let fallback = crate::process::guardian::generate_offline_process_explanation_with_category(
+            &meta.process_name,
+            None,
+            Some(&meta.path_category),
+            meta.publisher.as_deref(),
+            meta.description.as_deref(),
+            meta.cpu_percent,
+            meta.memory_mb,
+        );
+        insert_cached_explanation(&meta.process_name, fallback.clone());
+        return Ok(fallback);
     }
 
     let prompt = format!(
@@ -371,12 +381,45 @@ Respond ONLY with a valid raw JSON object (strictly no markdown backticks, no ma
         meta.memory_mb
     );
 
-    let client = reqwest::Client::builder()
+    let client = match reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(20))
         .build()
-        .map_err(|e| format!("HTTP client error: {}", e))?;
+    {
+        Ok(c) => c,
+        Err(e) => {
+            log::warn!("reqwest client error: {}, using offline fallback", e);
+            let fallback = crate::process::guardian::generate_offline_process_explanation_with_category(
+                &meta.process_name,
+                None,
+                Some(&meta.path_category),
+                meta.publisher.as_deref(),
+                meta.description.as_deref(),
+                meta.cpu_percent,
+                meta.memory_mb,
+            );
+            insert_cached_explanation(&meta.process_name, fallback.clone());
+            return Ok(fallback);
+        }
+    };
 
-    let text = call_gemini_api(&client, key, &prompt, &CANDIDATE_MODELS).await?;
+    let text_res = call_gemini_api(&client, key, &prompt, &CANDIDATE_MODELS).await;
+    let text = match text_res {
+        Ok(t) => t,
+        Err(e) => {
+            log::warn!("Gemini API call failed: {}, using offline fallback", e);
+            let fallback = crate::process::guardian::generate_offline_process_explanation_with_category(
+                &meta.process_name,
+                None,
+                Some(&meta.path_category),
+                meta.publisher.as_deref(),
+                meta.description.as_deref(),
+                meta.cpu_percent,
+                meta.memory_mb,
+            );
+            insert_cached_explanation(&meta.process_name, fallback.clone());
+            return Ok(fallback);
+        }
+    };
 
     let trimmed = text.trim();
     let clean_json = if let (Some(start), Some(end)) = (trimmed.find('{'), trimmed.rfind('}')) {
@@ -399,17 +442,29 @@ Respond ONLY with a valid raw JSON object (strictly no markdown backticks, no ma
         recommendation: String,
     }
 
-    let parsed: RawExplanation = serde_json::from_str(clean_json)
-        .map_err(|e| format!("Failed to parse AI output into JSON: {} | Raw: {}", e, clean_json))?;
-
-    let explanation = GeminiProcessExplanation {
-        summary: parsed.summary,
-        vendor: parsed.vendor,
-        safety: parsed.safety,
-        can_terminate: parsed.can_terminate,
-        why_high_usage: parsed.why_high_usage,
-        recommendation: parsed.recommendation,
-        sanitized_query: meta.clone(),
+    let parsed_res: Result<RawExplanation, _> = serde_json::from_str(clean_json);
+    let explanation = match parsed_res {
+        Ok(parsed) => GeminiProcessExplanation {
+            summary: parsed.summary,
+            vendor: parsed.vendor,
+            safety: parsed.safety,
+            can_terminate: parsed.can_terminate,
+            why_high_usage: parsed.why_high_usage,
+            recommendation: parsed.recommendation,
+            sanitized_query: meta.clone(),
+        },
+        Err(e) => {
+            log::warn!("JSON parse error on Gemini output: {}, using offline fallback", e);
+            let fallback = crate::process::guardian::generate_offline_process_explanation(
+                &meta.process_name,
+                None,
+                meta.publisher.as_deref(),
+                meta.description.as_deref(),
+                meta.cpu_percent,
+                meta.memory_mb,
+            );
+            fallback
+        }
     };
 
     // Cache result & persist to disk
@@ -512,11 +567,7 @@ pub async fn audit_processes_batch_with_gemini(
         });
     }
 
-    // Otherwise, query Gemini for uncached processes
     let key = api_key.trim();
-    if key.is_empty() {
-        return Err("Gemini API key is required. Please set it in Settings.".to_string());
-    }
 
     // Sanitize only the uncached processes
     let sanitized_list: Vec<SanitizedProcessMetadata> = uncached_procs
@@ -547,8 +598,50 @@ pub async fn audit_processes_batch_with_gemini(
         ));
     }
 
-    let prompt = format!(
-        "You are an expert Windows operating system performance and cybersecurity engineer.\n\
+    #[derive(Deserialize)]
+    struct RawFleetResponse {
+        fleet_summary: String,
+        #[serde(default)]
+        recommendations: Vec<String>,
+        #[serde(default)]
+        items: Vec<ProcessAuditItem>,
+    }
+
+    let parsed: RawFleetResponse = if key.is_empty() {
+        let mut offline_items = Vec::new();
+        for p in &uncached_procs {
+            let exp = crate::process::guardian::generate_offline_process_explanation(
+                &p.name,
+                p.exe_path.as_deref(),
+                p.publisher.as_deref(),
+                p.description.as_deref(),
+                p.cpu_percent,
+                p.memory_mb,
+            );
+            offline_items.push(ProcessAuditItem {
+                process_name: p.name.clone(),
+                summary: exp.summary,
+                vendor: exp.vendor,
+                safety: exp.safety,
+                can_terminate: exp.can_terminate,
+                why_high_usage: exp.why_high_usage,
+                recommendation: exp.recommendation,
+            });
+        }
+        RawFleetResponse {
+            fleet_summary: format!(
+                "Fleet audit analyzed {} processes using local security definitions and heuristics.",
+                unique_procs.len()
+            ),
+            recommendations: vec![
+                "Review background processes with high CPU or memory load.".to_string(),
+                "Check unsigned executables running from user temporary folders.".to_string(),
+            ],
+            items: offline_items,
+        }
+    } else {
+        let prompt = format!(
+            "You are an expert Windows operating system performance and cybersecurity engineer.\n\
 Analyze this active fleet of {} running processes from a user's Windows PC:\n\n\
 {}\n\n\
 Respond ONLY with a valid raw JSON object (strictly no markdown formatting, no backticks, no fences, no pre/post-amble) matching this JSON schema:\n\
@@ -567,39 +660,99 @@ Respond ONLY with a valid raw JSON object (strictly no markdown formatting, no b
     }}\n\
   ]\n\
 }}",
-        sanitized_list.len(),
-        process_descs
-    );
+            sanitized_list.len(),
+            process_descs
+        );
 
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(35))
-        .build()
-        .map_err(|e| format!("HTTP client error: {}", e))?;
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(35))
+            .build();
 
-    let text = call_gemini_api(&client, key, &prompt, &CANDIDATE_MODELS).await?;
+        let api_result = match client {
+            Ok(c) => call_gemini_api(&c, key, &prompt, &CANDIDATE_MODELS).await,
+            Err(e) => Err(e.to_string()),
+        };
 
-    let trimmed = text.trim();
-    let clean_json = if let (Some(start), Some(end)) = (trimmed.find('{'), trimmed.rfind('}')) {
-        if start <= end {
-            &trimmed[start..=end]
-        } else {
-            trimmed
+        match api_result {
+            Ok(text) => {
+                let trimmed = text.trim();
+                let clean_json = if let (Some(start), Some(end)) = (trimmed.find('{'), trimmed.rfind('}')) {
+                    if start <= end {
+                        &trimmed[start..=end]
+                    } else {
+                        trimmed
+                    }
+                } else {
+                    trimmed
+                };
+                serde_json::from_str::<RawFleetResponse>(clean_json).unwrap_or_else(|_| {
+                    let mut offline_items = Vec::new();
+                    for p in &uncached_procs {
+                        let exp = crate::process::guardian::generate_offline_process_explanation(
+                            &p.name,
+                            p.exe_path.as_deref(),
+                            p.publisher.as_deref(),
+                            p.description.as_deref(),
+                            p.cpu_percent,
+                            p.memory_mb,
+                        );
+                        offline_items.push(ProcessAuditItem {
+                            process_name: p.name.clone(),
+                            summary: exp.summary,
+                            vendor: exp.vendor,
+                            safety: exp.safety,
+                            can_terminate: exp.can_terminate,
+                            why_high_usage: exp.why_high_usage,
+                            recommendation: exp.recommendation,
+                        });
+                    }
+                    RawFleetResponse {
+                        fleet_summary: format!(
+                            "Fleet audit completed from local intelligence definitions ({} processes analyzed).",
+                            unique_procs.len()
+                        ),
+                        recommendations: vec![
+                            "Active processes evaluated via local rules and heuristics.".to_string(),
+                        ],
+                        items: offline_items,
+                    }
+                })
+            }
+            Err(e) => {
+                log::warn!("Gemini API batch audit failed: {}, falling back to offline", e);
+                let mut offline_items = Vec::new();
+                for p in &uncached_procs {
+                    let exp = crate::process::guardian::generate_offline_process_explanation(
+                        &p.name,
+                        p.exe_path.as_deref(),
+                        p.publisher.as_deref(),
+                        p.description.as_deref(),
+                        p.cpu_percent,
+                        p.memory_mb,
+                    );
+                    offline_items.push(ProcessAuditItem {
+                        process_name: p.name.clone(),
+                        summary: exp.summary,
+                        vendor: exp.vendor,
+                        safety: exp.safety,
+                        can_terminate: exp.can_terminate,
+                        why_high_usage: exp.why_high_usage,
+                        recommendation: exp.recommendation,
+                    });
+                }
+                RawFleetResponse {
+                    fleet_summary: format!(
+                        "Fleet audit completed from local intelligence definitions ({} processes analyzed).",
+                        unique_procs.len()
+                    ),
+                    recommendations: vec![
+                        "Active processes evaluated via local rules and heuristics.".to_string(),
+                    ],
+                    items: offline_items,
+                }
+            }
         }
-    } else {
-        trimmed
     };
-
-    #[derive(Deserialize)]
-    struct RawFleetResponse {
-        fleet_summary: String,
-        #[serde(default)]
-        recommendations: Vec<String>,
-        #[serde(default)]
-        items: Vec<ProcessAuditItem>,
-    }
-
-    let parsed: RawFleetResponse = serde_json::from_str(clean_json)
-        .map_err(|e| format!("Failed to parse Fleet AI JSON: {} | Raw: {}", e, clean_json))?;
 
     // Prepare batch cache entries for newly analyzed processes
     let mut batch_cache_entries: Vec<(String, GeminiProcessExplanation)> = Vec::new();
@@ -936,6 +1089,9 @@ mod tests {
                 safety: "safe".to_string(),
                 can_kill: true,
                 is_known: false,
+                signature_badge: "Verified (Known Publisher)".to_string(),
+                is_suspicious_location: false,
+                location_category: "Program Files".to_string(),
             },
             ProcessInfo {
                 pid: 1002,
@@ -950,6 +1106,9 @@ mod tests {
                 safety: "caution".to_string(),
                 can_kill: true,
                 is_known: false,
+                signature_badge: "Unsigned".to_string(),
+                is_suspicious_location: false,
+                location_category: "Program Files".to_string(),
             },
         ];
 
